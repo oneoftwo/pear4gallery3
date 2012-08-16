@@ -9,6 +9,7 @@ var pear = {defaultView: "grid",
     slideshowTimeout: 5000,
     currentImg: 0,
     hovering: false,
+    redirected: false,
     mosaicEffect: "" };
 
 function thumbPadding() {
@@ -221,12 +222,12 @@ function mosaicResize() {
     /* Fix for firefox that don't support dimensions on empty img tags */
     $('#mosaicImg').css('display', 'inline-block');
     /* Vertical center of image in mosaicView */
-    siteTop = $('#mosaicTable').height() / 2 - ($("#imageTitle").attr("savedH") + $("#mosaicImg").height()) / 2;
+    siteTop = $('#mainContainer').height() / 2 - ($("#imageTitle").attr("savedH") + $("#mosaicImg").height()) / 2;
     siteTop = siteTop < 0 ? 0 : siteTop;
     $('#mosaicDetailContainer').css('top', siteTop);
 
     /* Vertical center of content in carousel */
-    siteTop = $('#mosaicTable').height() / 2 - $('#pearImageFlow').height() / 2;
+    siteTop = $('#mainContainer').height() / 2 - $('#pearImageFlow').height() / 2;
     siteTop = siteTop < 0 ? 0 : siteTop;
     $('#pearImageFlow').css('top', siteTop);
 
@@ -316,6 +317,8 @@ function swatchImg(imageId) {
     }
 
     pear.currentImg = imageId;
+    //Image count.
+    if (!pear.redirected) { $.get(slideshowImages[pear.currentImg][6]); pear.redirected = false;}
 
     if (pear.currentView === 'mosaic') {
         $('#imageTitle').each(function (i) {$(this).html("<h2></h2>"); $(this).attr("savedH", $(this).height()); });
@@ -370,7 +373,7 @@ function showHoverView() {
     pear.hideHoverViewHandler = setTimeout(hideHoverView, 3000);
 }
 
-function focusImage(id, redirected) {
+function focusImage(id) {
     if (id < 0 || id >= slideshowImages.length) {
         if ( navigation.next !== '') {
             $.get(navigation.next,{ ajax: '1'},function (data) {
@@ -388,8 +391,6 @@ function focusImage(id, redirected) {
     $('.g-block-content').hide();
     $('#detailView').fadeIn('slow');
     showHoverView();
-    //Image count.
-    //if (!redirected) { $.get(slideshowImages[pear.currentImg][6]); }
 }
 
 function checkCookie() {
@@ -574,10 +575,11 @@ function pearInit(options) {
     if (h.bgcolor !== undefined) {
         pear.currentBg = h.bgcolor;
     }
+    pear.redirected = (h.redirected === 'true');
     if (h.viewMode !== undefined) {
         if (h.viewMode === 'detail') { 
             pear.currentView = pear.defaultView; 
-            focusImage(pear.currentImg, h.redirected);
+            focusImage(pear.currentImg);
         }
         pear.currentView = h.viewMode;
     }
@@ -643,7 +645,7 @@ function pearInit(options) {
         switchToGrid();
     }
     checkCookie();
-    $('#mosaicTable').css('top', 45 +$('#g-action-status').outerHeight(true));
+    $('#mainContainer').css('top', 45 +$('#g-action-status').outerHeight(true));
     $('#loading').hide();
 }
 
